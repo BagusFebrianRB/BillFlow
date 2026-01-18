@@ -15,7 +15,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -29,18 +29,58 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
+  // Bypass public routes
+  const publicRoutes = ["/login", "/signup", "/auth"];
+  const isPublicRoute = publicRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  if (isPublicRoute) {
+    return supabaseResponse;
+  }
+
+  // Get user
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/signup")
-  ) {
+  // Redirect to login if no user
+  if (!user || userError) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
+  }
+
+  // Check profile existence
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  // If no profile, wait 2 seconds and check again (for trigger delay)
+  if (!profile && !profileError) {
+    // Give trigger time to execute
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const { data: retryProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    // Still no profile after retry - sign out
+    if (!retryProfile) {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set(
+        "error",
+        "Profile creation failed. Please try signing up again."
+      );
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;
