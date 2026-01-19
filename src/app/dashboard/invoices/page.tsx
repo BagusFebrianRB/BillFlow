@@ -1,4 +1,4 @@
-import { getClients } from "@/app/actions/clients";
+import { getInvoices } from "@/app/actions/invoices";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import ClientsList from "@/components/clients/clients-list";
+import InvoicesList from "@/components/invoices/invoices-list";
 import BackButton from "@/components/ui/back-button";
 
-export default async function ClientsPage() {
-  const clients = await getClients();
+export default async function InvoicesPage() {
+  const invoices = await getInvoices();
 
   return (
     <div className="min-h-screen bg-slate-50 p-8">
@@ -21,36 +21,36 @@ export default async function ClientsPage() {
         <BackButton href="/dashboard" label="Back to Dashboard" />
         <div className="flex justify-between items-center mb-8 mt-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Clients</h1>
-            <p className="text-slate-600 mt-1">Manage your clients</p>
+            <h1 className="text-3xl font-bold text-slate-900">Invoices</h1>
+            <p className="text-slate-600 mt-1">Manage your invoices</p>
           </div>
-          <Link href="/dashboard/clients/new">
+          <Link href="/dashboard/invoices/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Client
+              Create Invoice
             </Button>
           </Link>
         </div>
 
-        {clients.length === 0 ? (
+        {invoices.length === 0 ? (
           <Card>
             <CardHeader>
-              <CardTitle>No clients yet</CardTitle>
+              <CardTitle>No invoices yet</CardTitle>
               <CardDescription>
-                Get started by adding your first client
+                Get started by creating your first invoice
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href="/dashboard/clients/new">
+              <Link href="/dashboard/invoices/new">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  Add your first client
+                  Create your first invoice
                 </Button>
               </Link>
             </CardContent>
           </Card>
         ) : (
-          <ClientsList clients={clients} />
+          <InvoicesList invoices={invoices} />
         )}
       </div>
     </div>
