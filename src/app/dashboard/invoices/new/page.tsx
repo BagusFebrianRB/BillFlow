@@ -44,7 +44,7 @@ export default async function NewInvoicePage() {
           <h1 className="text-3xl font-bold text-slate-900">Create Invoice</h1>
           <p className="text-slate-600 mt-1">Fill in the details below</p>
         </div>
-        <InvoiceForm clients={clients} />
+        <InvoiceForm clients={clients} mode="create" />
       </div>
     </div>
   );

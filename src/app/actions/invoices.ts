@@ -169,6 +169,92 @@ export async function updateInvoiceStatus(
   return data;
 }
 
+// update invoice
+export async function updateInvoice(id: string, formData: unknown) {
+  const validatedData = invoiceSchema.parse(formData);
+
+  const supabase = await createSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // Check if invoice is draft (only drafts can be edited)
+  const { data: existingInvoice } = await supabase
+    .from("invoices")
+    .select("status")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!existingInvoice) throw new Error("Invoice not found");
+  if (existingInvoice.status !== "draft") {
+    throw new Error("Only draft invoices can be edited");
+  }
+
+  // Calculate totals
+  const subtotal = validatedData.items.reduce(
+    (sum, item) => sum + item.quantity * item.rate,
+    0
+  );
+  const tax = subtotal * ((validatedData.tax_rate || 0) / 100);
+
+  let discountAmount = 0;
+  if (validatedData.discount_type === "percentage") {
+    discountAmount = subtotal * ((validatedData.discount || 0) / 100);
+  } else {
+    discountAmount = validatedData.discount || 0;
+  }
+
+  const total = subtotal + tax - discountAmount;
+
+  // Update invoice
+  const { data: invoice, error: invoiceError } = await supabase
+    .from("invoices")
+    .update({
+      client_id: validatedData.client_id,
+      date: validatedData.date,
+      due_date: validatedData.due_date,
+      subtotal,
+      tax,
+      discount: validatedData.discount || 0,
+      discount_type: validatedData.discount_type,
+      currency: validatedData.currency,
+      total,
+      notes: validatedData.notes || null,
+      terms: validatedData.terms || null,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select()
+    .single();
+
+  if (invoiceError) throw invoiceError;
+
+  // Delete existing items
+  await supabase.from("invoice_items").delete().eq("invoice_id", id);
+
+  // Insert new items
+  const itemsToInsert = validatedData.items.map((item) => ({
+    invoice_id: id,
+    description: item.description,
+    quantity: item.quantity,
+    rate: item.rate,
+    amount: item.quantity * item.rate,
+  }));
+
+  const { error: itemsError } = await supabase
+    .from("invoice_items")
+    .insert(itemsToInsert);
+
+  if (itemsError) throw itemsError;
+
+  revalidatePath("/dashboard/invoices");
+  revalidatePath(`/dashboard/invoices/${id}`);
+  return invoice;
+}
+
+// delete invoice
 export async function deleteInvoice(id: string) {
   const supabase = await createSupabaseClient();
   const {

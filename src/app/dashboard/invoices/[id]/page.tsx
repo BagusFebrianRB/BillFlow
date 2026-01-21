@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+
 import { format } from "date-fns";
 import InvoiceActions from "@/components/invoices/invoice-actions";
 import { formatCurrency } from "@/lib/utils/currency";
+import { Download } from "lucide-react";
+import BackButton from "@/components/ui/back-button";
 
 const statusColors = {
   draft: "bg-slate-100 text-slate-800",
@@ -33,14 +35,19 @@ export default async function InvoiceDetailPage({
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Link href="/dashboard/invoices">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Invoices
-            </Button>
-          </Link>
+          <BackButton href="/dashboard/invoices" label="Back to Invoices" />
 
-          <InvoiceActions invoice={invoice} />
+          <div className="flex gap-2">
+            {/* Download PDF Button */}
+            <Link href={`/api/invoices/${invoice.id}/pdf`} target="_blank">
+              <Button variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            </Link>
+
+            <InvoiceActions invoice={invoice} />
+          </div>
         </div>
 
         {/* Invoice Card */}

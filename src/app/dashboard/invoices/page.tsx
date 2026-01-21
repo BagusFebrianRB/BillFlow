@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import InvoicesList from "@/components/invoices/invoices-list";
+import InvoicesListWithFilters from "@/components/invoices/invoices-list-with-filters";
 import BackButton from "@/components/ui/back-button";
 
 export default async function InvoicesPage() {
@@ -19,6 +19,7 @@ export default async function InvoicesPage() {
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-7xl mx-auto">
         <BackButton href="/dashboard" label="Back to Dashboard" />
+
         <div className="flex justify-between items-center mb-8 mt-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Invoices</h1>
@@ -50,7 +51,7 @@ export default async function InvoicesPage() {
             </CardContent>
           </Card>
         ) : (
-          <InvoicesList invoices={invoices} />
+          <InvoicesListWithFilters invoices={invoices} />
         )}
       </div>
     </div>

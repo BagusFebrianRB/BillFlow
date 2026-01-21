@@ -16,9 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createInvoice } from "@/app/actions/invoices";
+import { createInvoice, updateInvoice } from "@/app/actions/invoices";
 import { toast } from "sonner";
-import type { Client } from "@/types/database";
+import type { Client, InvoiceWithItems } from "@/types/database";
 import { invoiceSchema, type InvoiceFormData } from "@/lib/validations/invoice";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
@@ -30,28 +30,37 @@ import {
 
 interface InvoiceFormProps {
   clients: Client[];
+  invoice?: InvoiceWithItems;
+  mode: "create" | "edit";
 }
 
-export default function InvoiceForm({ clients }: InvoiceFormProps) {
+export default function InvoiceForm({
+  clients,
+  invoice,
+  mode,
+}: InvoiceFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
-      client_id: "",
-      date: format(new Date(), "yyyy-MM-dd"),
-      due_date: format(
-        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        "yyyy-MM-dd"
-      ),
-      items: [{ description: "", quantity: 1, rate: 0 }],
-      notes: "",
-      terms: "",
-      tax_rate: 0,
-      discount: 0,
-      discount_type: "percentage", // ← BARU
-      currency: "USD", // ← BARU
+      client_id: invoice?.client_id || "",
+      date: invoice?.date || format(new Date(), "yyyy-MM-dd"),
+      due_date:
+        invoice?.due_date ||
+        format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
+      items: invoice?.invoice_items?.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        rate: item.rate,
+      })) || [{ description: "", quantity: 1, rate: 0 }],
+      notes: invoice?.notes || "",
+      terms: invoice?.terms || "",
+      tax_rate: invoice ? (invoice.tax / invoice.subtotal) * 100 : 0,
+      discount: invoice?.discount || 0,
+      discount_type: invoice?.discount_type || "percentage",
+      currency: invoice?.currency || "USD",
     },
   });
 
@@ -88,15 +97,20 @@ export default function InvoiceForm({ clients }: InvoiceFormProps) {
     setIsSubmitting(true);
 
     try {
-      await createInvoice(data);
-      toast.success("Invoice created successfully");
+      if (mode === "create") {
+        await createInvoice(data);
+        toast.success("Invoice created successfully");
+      } else {
+        await updateInvoice(invoice!.id, data);
+        toast.success("Invoice updated successfully");
+      }
       router.push("/dashboard/invoices");
       router.refresh();
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Failed to create invoice");
+        toast.error(`Failed to ${mode} invoice`);
       }
       console.error(error);
     } finally {
@@ -400,10 +414,12 @@ export default function InvoiceForm({ clients }: InvoiceFormProps) {
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
+              {mode === "create" ? "Creating..." : "Updating..."}
             </>
-          ) : (
+          ) : mode === "create" ? (
             "Create Invoice"
+          ) : (
+            "Update Invoice"
           )}
         </Button>
         <Button
