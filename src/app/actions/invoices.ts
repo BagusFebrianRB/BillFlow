@@ -33,13 +33,25 @@ export async function getInvoices(): Promise<InvoiceWithItems[]> {
       *,
       client:clients(*),
       invoice_items(*)
-    `
+    `,
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // AUTO-CALCULATE OVERDUE
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset time
+  return (data || []).map((invoice) => {
+    const dueDate = new Date(invoice.due_date);
+    const isOverdue = invoice.status === "sent" && dueDate < today;
+
+    return {
+      ...invoice,
+      status: isOverdue ? "overdue" : invoice.status,
+    } as InvoiceWithItems;
+  });
 }
 
 export async function getInvoice(id: string): Promise<InvoiceWithItems | null> {
@@ -57,7 +69,7 @@ export async function getInvoice(id: string): Promise<InvoiceWithItems | null> {
       *,
       client:clients(*),
       invoice_items(*)
-    `
+    `,
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -67,7 +79,17 @@ export async function getInvoice(id: string): Promise<InvoiceWithItems | null> {
     if (error.code === "PGRST116") return null;
     throw error;
   }
-  return data;
+
+  // AUTO-CALCULATE OVERDUE
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = new Date(data.due_date);
+  const isOverdue = data.status === "sent" && dueDate < today;
+
+  return {
+    ...data,
+    status: isOverdue ? "overdue" : data.status,
+  } as InvoiceWithItems;
 }
 
 export async function createInvoice(formData: unknown) {
@@ -85,7 +107,7 @@ export async function createInvoice(formData: unknown) {
   // Calculate totals
   const subtotal = validatedData.items.reduce(
     (sum, item) => sum + item.quantity * item.rate,
-    0
+    0,
   );
   const tax = subtotal * ((validatedData.tax_rate || 0) / 100);
 
@@ -97,6 +119,12 @@ export async function createInvoice(formData: unknown) {
   }
   const total = subtotal + tax - discountAmount;
 
+  // ✅ ROUND SEMUA ANGKA (2 decimals)
+  const roundedSubtotal = Math.round(subtotal * 100) / 100;
+  const roundedTax = Math.round(tax * 100) / 100;
+  const roundedDiscount = Math.round(discountAmount * 100) / 100;
+  const roundedTotal = Math.round(total * 100) / 100;
+
   // Create invoice
   const { data: invoice, error: invoiceError } = await supabase
     .from("invoices")
@@ -107,12 +135,12 @@ export async function createInvoice(formData: unknown) {
       date: validatedData.date,
       due_date: validatedData.due_date,
       status: "draft",
-      subtotal,
-      tax,
-      discount: validatedData.discount || 0,
+      subtotal: roundedSubtotal,
+      tax: roundedTax,
+      discount: roundedDiscount || 0,
       discount_type: validatedData.discount_type,
       currency: validatedData.currency,
-      total,
+      total: roundedTotal,
       notes: validatedData.notes || null,
       terms: validatedData.terms || null,
     })
@@ -142,7 +170,7 @@ export async function createInvoice(formData: unknown) {
 
 export async function updateInvoiceStatus(
   id: string,
-  status: "draft" | "sent" | "paid" | "overdue"
+  status: "draft" | "sent" | "paid" | "overdue",
 ) {
   const supabase = await createSupabaseClient();
   const {
@@ -195,7 +223,7 @@ export async function updateInvoice(id: string, formData: unknown) {
   // Calculate totals
   const subtotal = validatedData.items.reduce(
     (sum, item) => sum + item.quantity * item.rate,
-    0
+    0,
   );
   const tax = subtotal * ((validatedData.tax_rate || 0) / 100);
 
@@ -208,6 +236,12 @@ export async function updateInvoice(id: string, formData: unknown) {
 
   const total = subtotal + tax - discountAmount;
 
+  //  ROUND SEMUA ANGKA (2 decimals)
+  const roundedSubtotal = Math.round(subtotal * 100) / 100;
+  const roundedTax = Math.round(tax * 100) / 100;
+  const roundedDiscount = Math.round(discountAmount * 100) / 100;
+  const roundedTotal = Math.round(total * 100) / 100;
+
   // Update invoice
   const { data: invoice, error: invoiceError } = await supabase
     .from("invoices")
@@ -215,12 +249,12 @@ export async function updateInvoice(id: string, formData: unknown) {
       client_id: validatedData.client_id,
       date: validatedData.date,
       due_date: validatedData.due_date,
-      subtotal,
-      tax,
-      discount: validatedData.discount || 0,
+      subtotal: roundedSubtotal,
+      tax: roundedTax,
+      discount: roundedDiscount || 0,
       discount_type: validatedData.discount_type,
       currency: validatedData.currency,
-      total,
+      total: roundedTotal,
       notes: validatedData.notes || null,
       terms: validatedData.terms || null,
     })

@@ -10,22 +10,21 @@ import {
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import ClientsList from "@/components/clients/clients-list";
-import BackButton from "@/components/ui/back-button";
+import DashboardLayout from "@/components/layout/dashboard-layout";
 
 export default async function ClientsPage() {
   const clients = await getClients();
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <BackButton href="/dashboard" label="Back to Dashboard" />
-        <div className="flex justify-between items-center mb-8 mt-4">
+    <DashboardLayout>
+      <div className="p-8">
+        <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Clients</h1>
             <p className="text-slate-600 mt-1">Manage your clients</p>
           </div>
           <Link href="/dashboard/clients/new">
-            <Button>
+            <Button className="bg-teal-500 hover:bg-teal-600">
               <Plus className="mr-2 h-4 w-4" />
               Add Client
             </Button>
@@ -42,7 +41,7 @@ export default async function ClientsPage() {
             </CardHeader>
             <CardContent>
               <Link href="/dashboard/clients/new">
-                <Button>
+                <Button className="bg-teal-500 hover:bg-teal-600">
                   <Plus className="mr-2 h-4 w-4" />
                   Add your first client
                 </Button>
@@ -53,6 +52,6 @@ export default async function ClientsPage() {
           <ClientsList clients={clients} />
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

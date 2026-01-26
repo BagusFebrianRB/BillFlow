@@ -4,10 +4,11 @@ import { getInvoice } from "@/app/actions/invoices";
 import InvoicePDF from "@/components/pdf/invoice-pdf";
 import { createClient } from "@/lib/supabase/server";
 import React from "react";
+import { getBusinessProfile } from "@/app/actions/business-profile";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -21,13 +22,16 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const invoice = await getInvoice(id);
-
+    const [invoice, businessProfile] = await Promise.all([
+      getInvoice(id),
+      getBusinessProfile().catch(() => null),
+    ]);
+    
     if (!invoice || invoice.user_id !== user.id) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const buffer = await renderToBuffer(<InvoicePDF invoice={invoice} />);
+    const buffer = await renderToBuffer(<InvoicePDF invoice={invoice} businessProfile={businessProfile} />);
 
     return new Response(new Uint8Array(buffer), {
       headers: {

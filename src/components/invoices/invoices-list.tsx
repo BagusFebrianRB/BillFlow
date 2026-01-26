@@ -11,6 +11,7 @@ import {
   Send,
   CheckCircle,
   Loader2,
+  Edit,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -135,6 +136,15 @@ export default function InvoicesList({
                       View
                     </DropdownMenuItem>
                   </Link>
+
+                  {invoice.status === "draft" && (
+                    <Link href={`/dashboard/invoices/${invoice.id}/edit`}>
+                      <DropdownMenuItem>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
 
                   <Link
                     href={`/api/invoices/${invoice.id}/pdf`}

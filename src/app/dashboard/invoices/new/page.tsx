@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import BackButton from "@/components/ui/back-button";
+
 
 export default async function NewInvoicePage() {
   const clients = await getClients();
@@ -39,7 +39,6 @@ export default async function NewInvoicePage() {
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-4xl mx-auto">
-        <BackButton href="/dashboard/invoices" label="Back to Invoices" />
         <div className="mb-6 mt-4">
           <h1 className="text-3xl font-bold text-slate-900">Create Invoice</h1>
           <p className="text-slate-600 mt-1">Fill in the details below</p>

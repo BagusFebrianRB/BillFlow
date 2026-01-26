@@ -2,7 +2,7 @@ import { getInvoice } from "@/app/actions/invoices";
 import { getClients } from "@/app/actions/clients";
 import { notFound } from "next/navigation";
 import InvoiceForm from "@/components/invoices/invoice-form";
-import BackButton from "@/components/ui/back-button";
+
 import {
   Card,
   CardDescription,
@@ -27,10 +27,6 @@ export default async function EditInvoicePage({
     return (
       <div className="min-h-screen bg-slate-50 p-8">
         <div className="max-w-2xl mx-auto">
-          <BackButton
-            href={`/dashboard/invoices/${id}`}
-            label="Back to Invoice"
-          />
           <Card className="mt-4">
             <CardHeader>
               <CardTitle>Cannot Edit Invoice</CardTitle>
@@ -48,11 +44,6 @@ export default async function EditInvoicePage({
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="max-w-4xl mx-auto">
-        <BackButton
-          href={`/dashboard/invoices/${id}`}
-          label="Back to Invoice"
-        />
-
         <div className="mb-6 mt-4">
           <h1 className="text-3xl font-bold text-slate-900">Edit Invoice</h1>
           <p className="text-slate-600 mt-1">

@@ -44,3 +44,4 @@ export interface InvoiceWithItems extends Invoice {
   client?: Client | null;
   invoice_items: InvoiceItem[];
 }
+

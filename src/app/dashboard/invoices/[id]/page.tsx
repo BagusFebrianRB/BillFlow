@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import InvoiceActions from "@/components/invoices/invoice-actions";
 import { formatCurrency } from "@/lib/utils/currency";
 import { Download } from "lucide-react";
-import BackButton from "@/components/ui/back-button";
+
 
 const statusColors = {
   draft: "bg-slate-100 text-slate-800",
@@ -18,6 +18,8 @@ const statusColors = {
   overdue: "bg-red-100 text-red-800",
 };
 
+
+
 export default async function InvoiceDetailPage({
   params,
 }: {
@@ -25,6 +27,8 @@ export default async function InvoiceDetailPage({
 }) {
   const { id } = await params;
   const invoice = await getInvoice(id);
+
+  const tax_rate = invoice ? (invoice.tax / invoice.subtotal) * 100 : 0;
 
   if (!invoice) {
     notFound();
@@ -35,8 +39,6 @@ export default async function InvoiceDetailPage({
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <BackButton href="/dashboard/invoices" label="Back to Invoices" />
-
           <div className="flex gap-2">
             {/* Download PDF Button */}
             <Link href={`/api/invoices/${invoice.id}/pdf`} target="_blank">
@@ -180,7 +182,7 @@ export default async function InvoiceDetailPage({
                 </div>
                 {invoice.tax > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Tax:</span>
+                    <span className="text-slate-600">Tax {tax_rate}% :</span>
                     <span className="font-medium">
                       {formatCurrency(invoice.tax, invoice.currency)}
                     </span>
