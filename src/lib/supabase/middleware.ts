@@ -16,23 +16,23 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   // Bypass public routes
-  const publicRoutes = ["/login", "/signup", "/auth"];
+  const publicRoutes = ["/", "/login", "/signup", "/auth"];
   const isPublicRoute = publicRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    request.nextUrl.pathname.startsWith(route),
   );
 
   if (isPublicRoute) {
@@ -77,7 +77,7 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/login";
       url.searchParams.set(
         "error",
-        "Profile creation failed. Please try signing up again."
+        "Profile creation failed. Please try signing up again.",
       );
       return NextResponse.redirect(url);
     }
