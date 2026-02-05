@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import DashboardLayout from "@/components/layout/dashboard-layout";
+import BackButton from "@/components/ui/back-button";
 
 
 export default async function NewInvoicePage() {
@@ -37,7 +39,9 @@ export default async function NewInvoicePage() {
   }
 
   return (
+    <DashboardLayout>
     <div className="min-h-screen bg-slate-50 p-8">
+      <BackButton href="/dashboard/invoices" label="Back to Invoices" />
       <div className="max-w-4xl mx-auto">
         <div className="mb-6 mt-4">
           <h1 className="text-3xl font-bold text-slate-900">Create Invoice</h1>
@@ -46,5 +50,6 @@ export default async function NewInvoicePage() {
         <InvoiceForm clients={clients} mode="create" />
       </div>
     </div>
+    </DashboardLayout>
   );
 }

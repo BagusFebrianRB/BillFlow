@@ -35,7 +35,7 @@ export default function InvoiceFilters({
         (inv) =>
           inv.invoice_number.toLowerCase().includes(query.toLowerCase()) ||
           inv.client?.name.toLowerCase().includes(query.toLowerCase()) ||
-          inv.client?.company?.toLowerCase().includes(query.toLowerCase())
+          inv.client?.company?.toLowerCase().includes(query.toLowerCase()),
       );
     }
 
@@ -51,6 +51,10 @@ export default function InvoiceFilters({
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         case "date-asc":
           return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case "duedate-desc":
+          return new Date(b.due_date).getTime() - new Date(a.due_date).getTime();
+        case "duedate-asc":
+          return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
         case "amount-desc":
           return b.total - a.total;
         case "amount-asc":
@@ -127,6 +131,8 @@ export default function InvoiceFilters({
             <SelectContent>
               <SelectItem value="date-desc">Date (Newest)</SelectItem>
               <SelectItem value="date-asc">Date (Oldest)</SelectItem>
+              <SelectItem value="duedate-desc">Due Date (Newest)</SelectItem>
+              <SelectItem value="duedate-asc">Due Date (Oldest)</SelectItem>
               <SelectItem value="amount-desc">Amount (High to Low)</SelectItem>
               <SelectItem value="amount-asc">Amount (Low to High)</SelectItem>
               <SelectItem value="number-desc">Number (Z-A)</SelectItem>

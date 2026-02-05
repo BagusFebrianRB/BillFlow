@@ -2,6 +2,7 @@ import { getInvoice } from "@/app/actions/invoices";
 import { getClients } from "@/app/actions/clients";
 import { notFound } from "next/navigation";
 import InvoiceForm from "@/components/invoices/invoice-form";
+import DashboardLayout from "@/components/layout/dashboard-layout";
 
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import BackButton from "@/components/ui/back-button";
 
 export default async function EditInvoicePage({
   params,
@@ -42,17 +44,20 @@ export default async function EditInvoicePage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 mt-4">
-          <h1 className="text-3xl font-bold text-slate-900">Edit Invoice</h1>
-          <p className="text-slate-600 mt-1">
-            Update invoice {invoice.invoice_number}
-          </p>
-        </div>
+    <DashboardLayout>
+      <div className="min-h-screen bg-slate-50 p-8">
+        <BackButton href="/dashboard/invoices" label="Back to Invoices" />
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6 mt-4">
+            <h1 className="text-3xl font-bold text-slate-900">Edit Invoice</h1>
+            <p className="text-slate-600 mt-1">
+              Update invoice {invoice.invoice_number}
+            </p>
+          </div>
 
-        <InvoiceForm clients={clients} invoice={invoice} mode="edit" />
+          <InvoiceForm clients={clients} invoice={invoice} mode="edit" />
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

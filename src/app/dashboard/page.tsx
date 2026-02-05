@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import {
-  Users,
   DollarSign,
   Clock,
   ClockAlert,
@@ -43,7 +42,7 @@ export default async function DashboardPage() {
 
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Revenue
               </CardTitle>

@@ -1,15 +1,22 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
-import type {  InvoiceWithItems } from "@/types/database";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
+import type { InvoiceWithItems } from "@/types/database";
 import { format } from "date-fns";
 
 // ADD THIS TYPE
 interface BusinessProfile {
-  business_name: string
-  logo_url: string | null
-  address: string | null
-  phone: string | null
-  tax_id: string | null
+  business_name: string;
+  logo_url: string | null;
+  address: string | null;
+  phone: string | null;
+  tax_id: string | null;
 }
 
 const styles = StyleSheet.create({
@@ -142,7 +149,7 @@ const styles = StyleSheet.create({
 
 interface InvoicePDFProps {
   invoice: InvoiceWithItems;
-  businessProfile?: BusinessProfile | null
+  businessProfile?: BusinessProfile | null;
 }
 
 function getCurrencySymbol(currency: string): string {
@@ -163,47 +170,49 @@ function formatAmount(amount: number, currency: string): string {
   })}`;
 }
 
-const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice,businessProfile }) => {
-  const discountAmount =
-    invoice.discount_type === "percentage"
-      ? invoice.subtotal * (invoice.discount / 100)
-      : invoice.discount;
+const InvoicePDF: React.FC<InvoicePDFProps> = ({
+  invoice,
+  businessProfile,
+}) => {
+  const discountAmount = invoice.discount;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>INVOICE</Text>
-          <Text style={styles.invoiceNumber}>{invoice.invoice_number}</Text>
-        </View>
+        <View style={styles.row}>
+          {businessProfile && (
+            <View style={{ maxWidth: 120 }}>
+              {businessProfile.logo_url && (
+                <Image
+                  src={businessProfile.logo_url}
+                  style={{ width: 60, height: 60, marginBottom: 10 }}
+                />
+              )}
+              <Text style={styles.value}>{businessProfile.business_name}</Text>
+              {businessProfile.address && (
+                <Text style={{ fontSize: 9, color: "#666" }}>
+                  {businessProfile.address}
+                </Text>
+              )}
+              {businessProfile.phone && (
+                <Text style={{ fontSize: 9, color: "#666" }}>
+                  {businessProfile.phone}
+                </Text>
+              )}
+              {businessProfile.tax_id && (
+                <Text style={{ fontSize: 9, color: "#666" }}>
+                  Tax ID: {businessProfile.tax_id}
+                </Text>
+              )}
+            </View>
+          )}
 
-        {businessProfile && (
-          <View style={{ marginTop: 20 }}>
-            {businessProfile.logo_url && (
-              <Image
-                src={businessProfile.logo_url}
-                style={{ width: 60, height: 60, marginBottom: 10 }}
-              />
-            )}
-            <Text style={styles.value}>{businessProfile.business_name}</Text>
-            {businessProfile.address && (
-              <Text style={{ fontSize: 9, color: "#666" }}>
-                {businessProfile.address}
-              </Text>
-            )}
-            {businessProfile.phone && (
-              <Text style={{ fontSize: 9, color: "#666" }}>
-                {businessProfile.phone}
-              </Text>
-            )}
-            {businessProfile.tax_id && (
-              <Text style={{ fontSize: 9, color: "#666" }}>
-                Tax ID: {businessProfile.tax_id}
-              </Text>
-            )}
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>INVOICE</Text>
+            <Text style={styles.invoiceNumber}>{invoice.invoice_number}</Text>
           </View>
-        )}
+        </View>
 
         {/* Bill To & Invoice Info */}
         <View
@@ -305,13 +314,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice,businessProfile }) => {
 
           {invoice.discount > 0 && (
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>
-                Discount{" "}
-                {invoice.discount_type === "percentage"
-                  ? `(${invoice.discount}%)`
-                  : ""}
-                :
-              </Text>
+              <Text style={styles.totalLabel}>Discount :</Text>
               <Text style={styles.totalValue}>
                 -{formatAmount(discountAmount, invoice.currency)}
               </Text>
